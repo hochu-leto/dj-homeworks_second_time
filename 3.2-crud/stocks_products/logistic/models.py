@@ -15,6 +15,9 @@ class Stock(models.Model):
         related_name='stocks',
     )
 
+    def __str__(self):
+        return str(self.id)
+
 
 class StockProduct(models.Model):
     stock = models.ForeignKey(
