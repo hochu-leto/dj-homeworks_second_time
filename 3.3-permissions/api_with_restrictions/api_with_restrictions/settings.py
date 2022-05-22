@@ -91,6 +91,8 @@ DATABASES = {
         'NAME': 'netology_classified_ads',
         'HOST': '127.0.0.1',
         'PORT': '5432',
+        'USER': 'django_phones',
+        'PASSWORD': '11111111'
     }
 }
 
