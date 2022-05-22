@@ -32,10 +32,7 @@ class StockSerializer(serializers.ModelSerializer):
         # создаем склад по его параметрам
         stock = super().create(validated_data)
         for position in positions:
-            product = position.pop('product')
-            quantity = position.pop('quantity')
-            price = position.pop('price')
-            product = StockProduct(stock=stock, product=product, quantity=quantity, price=price)
+            product = StockProduct(stock=stock, **position)
             product.save()
         return stock
 
@@ -48,5 +45,6 @@ class StockSerializer(serializers.ModelSerializer):
             product = position.pop('product')
             quantity = position.pop('quantity')
             price = position.pop('price')
-            st.update_or_create(stock=stock, product=product, quantity=quantity, price=price)
+            updated_values = {'quantity': quantity, 'price': price}
+            st.update_or_create(stock=stock, product=product, defaults=updated_values)
         return stock
