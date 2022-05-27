@@ -23,23 +23,20 @@ class AdvertisementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertisement
         fields = ('id', 'title', 'description', 'creator',
-                  'status', 'created_at', )
+                  'status', 'created_at',)
 
     def create(self, validated_data):
-        """Метод для создания"""
-
-        # Простановка значения поля создатель по-умолчанию.
-        # Текущий пользователь является создателем объявления
-        # изменить или переопределить его через API нельзя.
-        # обратите внимание на `context` – он выставляется автоматически
-        # через методы ViewSet.
-        # само поле при этом объявляется как `read_only=True`
         validated_data["creator"] = self.context["request"].user
         return super().create(validated_data)
 
     def validate(self, data):
-        """Метод для валидации. Вызывается при создании и обновлении."""
-
-        # TODO: добавьте требуемую валидацию
-
+        limit = 10
+        opens = Advertisement.objects.filter(creator=self.context["request"].user, status='OPEN').count()
+        if 'status' in data.keys():
+            if opens > limit and data['status'] == 'OPEN':
+                raise serializers.ValidationError(f'Открытых объявлений не должно быть больше {limit} '
+                                                  f'У вас сейчас {opens} открытых объявлений')
+        elif opens > limit - 1:
+            raise serializers.ValidationError(f'Открытых объявлений не должно быть больше {limit} '
+                                              f'У вас сейчас {opens} открытых объявлений')
         return data
