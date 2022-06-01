@@ -31,12 +31,11 @@ class AdvertisementSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         limit = 10
+        if self.context['request'].method == 'PATCH' and data['status'] == 'CLOSED':
+            return data
+
         opens = Advertisement.objects.filter(creator=self.context["request"].user, status='OPEN').count()
-        if 'status' in data.keys():
-            if opens > limit and data['status'] == 'OPEN':
-                raise serializers.ValidationError(f'Открытых объявлений не должно быть больше {limit} '
-                                                  f'У вас сейчас {opens} открытых объявлений')
-        elif opens > limit - 1:
+        if opens > limit - 1:
             raise serializers.ValidationError(f'Открытых объявлений не должно быть больше {limit} '
                                               f'У вас сейчас {opens} открытых объявлений')
         return data
