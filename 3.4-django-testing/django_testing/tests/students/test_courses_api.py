@@ -84,15 +84,35 @@ def test_filter_id(client, courses_factory):
 # тест успешного создания курса
 # здесь фабрика не нужна, готовим JSON-данные и создаем курс
 @pytest.mark.django_db
-def test_create_course(client):
+def test_create_course(client, student_factory):
     count = Course.objects.count()
-
-    response = client.post('/courses/', data={'user': user.id, 'text': 'test text'})
+    students = student_factory(_quantity=10)
+    response = client.post('/api/v1/courses/', data={'name': 'python for beginners',
+                                                     'students': [5, 6, 7]})
 
     assert response.status_code == 201
-    assert Message.objects.count() == count + 1
+    assert Course.objects.count() == count + 1
+
 
 # тест успешного обновления курса
 # сначала через фабрику создаем, потом обновляем JSON-данными
+@pytest.mark.django_db
+def test_change_course(client, courses_factory, student_factory):
+    course = courses_factory()
+    response = client.patch(f'/api/v1/courses/{course.id}/', {'name': 'blablabla'})
+    assert response.status_code == 200
+    response = client.get(f'/api/v1/courses/{course.id}/')
+    assert response.status_code == 200
+    data = response.json()
+    assert data['name'] == 'blablabla'
+
 
 # тест успешного удаления курса
+@pytest.mark.django_db
+def test_delete_course(client, courses_factory):
+    # создаем курс через фабрику
+    course = courses_factory()
+    count = Course.objects.count()
+    response = client.delete(f'/api/v1/courses/{course.id}/')
+    assert response.status_code == 204
+    assert Course.objects.count() == count - 1
