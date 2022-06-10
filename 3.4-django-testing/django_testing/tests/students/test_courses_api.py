@@ -31,9 +31,8 @@ def courses_factory():
 def test_create_course(client, courses_factory):
     # создаем курс через фабрику
     course = courses_factory()
-    count = Course.objects.count()
     # строим урл и делаем запрос через тестовый клиент
-    response = client.get(f'/api/v1/courses/{count}/')
+    response = client.get(f'/api/v1/courses/{course.id}/')
     assert response.status_code == 200
     data = response.json()
     # проверяем, что вернулся именно тот курс, который запрашивали
@@ -62,17 +61,17 @@ def test_get_courses(client, courses_factory):
 @pytest.mark.django_db
 def test_filter_id(client, courses_factory):
     courses = courses_factory(_quantity=10)
-    c = 5
-    response = client.get(f'/api/v1/courses/?id={c}')
+    c = courses[5]
+    response = client.get(f'/api/v1/courses/?id={c.id}')
     data = response.json()
     # Все тесты должны явно проверять код возврата.
     assert response.status_code == 200
-    assert data[0]['name'] == courses[c - 1].name
+    assert data[0]['name'] == c.name
 
 
 # проверка фильтрации списка курсов по name
 @pytest.mark.django_db
-def test_filter_id(client, courses_factory):
+def test_filter_name(client, courses_factory):
     course = courses_factory()
     response = client.get(f'/api/v1/courses/?name={course.name}')
     data = response.json()
